@@ -27,7 +27,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: '11.0.25+8' 
+          java-version: '11.0.25+9' 
           distribution: 'temurin'
       - name: Maven Build
         run: mvn clean package
