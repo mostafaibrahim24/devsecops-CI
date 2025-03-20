@@ -19,24 +19,49 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           extra_args: --results=verified,unknown
-  build:
-    name: Build
+  dependency-scanning:
     runs-on: ubuntu-latest
-    needs: secret-scanning
+    name: depcheck
     steps:
-      - name: Checkout Repo
+      - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up JDK
-        uses: actions/setup-java@v3
+      - name: Build project with Maven
+        run: mvn clean install
+      - name: Depcheck
+        uses: dependency-check/Dependency-Check_Action@main
+        id: Depcheck
         with:
-          java-version: '11.0.25+9' 
-          distribution: 'temurin'
-      - name: Maven Build
-        run: mvn clean package
-      - name: Upload Artifact
+          project: 'test'
+          path: '.'
+          format: 'HTML'
+          out: 'reports'
+          args: >
+            --failOnCVSS 7
+            --enableRetired
+      - name: Upload Test results
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: petclinic.jar
-          path: target/*.jar
+           name: Depcheck report
+           path: ${{github.workspace}}/reports
+  # build:
+  #   name: Build
+  #   runs-on: ubuntu-latest
+  #   needs: secret-scanning
+  #   steps:
+  #     - name: Checkout Repo
+  #       uses: actions/checkout@v4
+  #     - name: Set up JDK
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         java-version: '11.0.25+9' 
+  #         distribution: 'temurin'
+  #     - name: Maven Build
+  #       run: mvn clean package
+  #     - name: Upload Artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: petclinic.jar
+  #         path: target/*.jar
       
   
