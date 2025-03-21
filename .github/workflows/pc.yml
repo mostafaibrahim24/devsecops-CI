@@ -139,6 +139,16 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
+      - name: Restore Maven packages
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: petclinic.jar
+          path: ~/
       - name: Build an image from Dockerfile
         run: docker build -t docker.io/mostafaibrahim24/petclinic:${{ github.sha }} .
       - name: Run Trivy vulnerability scanner
