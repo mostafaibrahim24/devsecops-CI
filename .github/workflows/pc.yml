@@ -145,24 +145,25 @@ jobs:
         uses: aquasecurity/trivy-action@0.28.0
         with:
           image-ref: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/petclinic
-          format: 'table'
+          format: json
+          output: trivy-report.json
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-  push-image:
-      name: Build and push to registry
-      runs-on: ubuntu-latest
-      steps:
-        - name: Registry login
-          uses: docker/login-action@v3
-          with:
-            username: ${{ secrets.DOCKERHUB_USERNAME }}
-            password: ${{ secrets.DOCKERHUB_TOKEN }}
-        - name: Build and push
-          uses: docker/build-push-action@v6
-          with:
-            push: true
-            tags: ${{ secrets.DOCKERHUB_USERNAME }}/petclinic:latest
+  # push-image:
+  #     name: Build and push to registry
+  #     runs-on: ubuntu-latest
+  #     steps:
+  #       - name: Registry login
+  #         uses: docker/login-action@v3
+  #         with:
+  #           username: ${{ secrets.DOCKERHUB_USERNAME }}
+  #           password: ${{ secrets.DOCKERHUB_TOKEN }}
+  #       - name: Build and push
+  #         uses: docker/build-push-action@v6
+  #         with:
+  #           push: true
+  #           tags: ${{ secrets.DOCKERHUB_USERNAME }}/petclinic:latest
       
   
