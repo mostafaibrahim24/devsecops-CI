@@ -1,20 +1,13 @@
-FROM maven:3.8.6-jdk-11-slim AS build
+FROM maven:3.8.6-jdk-11-slim 
 WORKDIR /app
 
 COPY pom.xml .
 COPY src src/
 
-RUN mvn clean package -DskipTests
-
-# Use a smaller runtime image for production
-FROM openjdk:11-jre-slim-buster
-
-COPY --from=build target/*.jar petclinic.jar
-
-WORKDIR /app
+RUN mvn clean package
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "petclinic.jar"]
+ENTRYPOINT ["java", "-jar", "target/*.jar"]
 
 
