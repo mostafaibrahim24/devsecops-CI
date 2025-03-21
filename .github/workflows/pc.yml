@@ -63,8 +63,23 @@ jobs:
         with:
           name: coverage.html
           path: target/site/jacoco/index.html
-      
-      
+  analyze-sonar:
+    name: SonarQube
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11.0.25+9' 
+          distribution: 'temurin'
+      - name: Analyze
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=mostafaibrahim24_devsecops-CI
   # build:
   #   name: Build
   #   runs-on: ubuntu-latest
