@@ -17,5 +17,3 @@ target/*
 _site/
 .editorconfig
 Jenkinsfile
-application-mysql.properties
-./src/main/resources/application-mysql.properties

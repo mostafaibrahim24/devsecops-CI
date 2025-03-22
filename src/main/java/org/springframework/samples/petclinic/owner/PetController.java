@@ -34,6 +34,9 @@ import java.util.Collection;
 @RequestMapping("/owners/{ownerId}")
 class PetController {
 
+	private static final String PET_REGISTRY_API_URL = "https://api.petfinder.com/v2/animals";
+    private static final String PET_REGISTRY_API_KEY = "abcdef1234567890abcdef1234567890"
+
 	private static final String VIEWS_PETS_CREATE_OR_UPDATE_FORM = "pets/createOrUpdatePetForm";
 
 	private final PetRepository pets;

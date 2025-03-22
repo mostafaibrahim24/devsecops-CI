@@ -27,9 +27,8 @@ jobs:
         with:
           fetch-depth: 0
       - name: Truffle Hog scan
-        uses: trufflesecurity/trufflehog@main
-        with:
-          extra_args: --results=verified,unknown
+        uses: edplato/trufflehog-actions-scan@master
+
       - name: Slack notify on failure
         uses: slackapi/slack-github-action@v2.0.0
         if: failure()
@@ -51,6 +50,13 @@ jobs:
                   "text": {
                     "type": "mrkdwn",
                     "text": ":x: *Job* `${{ github.job }}` in *workflow* `${{ github.workflow }}` has failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Workflow Run Link:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Workflow Run>"
                   }
                 },
                 {
@@ -454,7 +460,7 @@ jobs:
               }
   slack-pipeline-success-notify:
     name: Slack Pipeline Success Notify
-    if: always()
+    if: success()
     needs: [start-time-capture,push-image]
     runs-on: ubuntu-latest
     steps:
@@ -470,7 +476,7 @@ jobs:
           echo "SECONDS=$SECONDS" >> $GITHUB_OUTPUT
       - name: Notify
         uses: slackapi/slack-github-action@v2.0.0
-        if: always()
+        if: success()
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
