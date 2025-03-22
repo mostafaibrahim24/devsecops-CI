@@ -111,23 +111,9 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*Repo*\n<https://github.com/${{ github.repository }}|${{ github.repository }}>"
+                    "text": "*Commit of message `${{ github.event.head_commit.message }}` commited by ${{ github.event.head_commit.author.name }} has resulted in the failure of the job\nRef: <${{ github.event.head_commit.url }}|${{ github.sha }}>"
                   }
                 },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Commit resulted in failure*\n Commit message:`${{ github.event.head_commit.message }}`\n<${{ github.event.head_commit.url }}|${{ github.sha }}>"
-                  }
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Author*\n${{ github.event.head_commit.author.name }}"
-                  }
-                }
               ]
             }   
   compile:
