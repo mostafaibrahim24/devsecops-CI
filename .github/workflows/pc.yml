@@ -6,6 +6,7 @@ on:
       - main
     paths-ignore:
       - README.md
+      - .gitignore
 jobs:
   start-time-capture:
     runs-on: ubuntu-latest
@@ -61,81 +62,81 @@ jobs:
                 },
               ]
             }
-  # dependency-scanning:
-  #   runs-on: ubuntu-latest
-  #   name: OWASP Dependency check
-  #   needs: secret-scanning
-  #   # continue-on-error: true
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #     - name: Restore Maven packages
-  #       uses: actions/cache/restore@v4
-  #       with:
-  #         path: ~/.m2/repository
-  #         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-  #     - name: Build project with Maven
-  #       run: mvn clean install -DskipTests
-  #     - name: Cache Maven packages
-  #       id: cache-maven
-  #       uses: actions/cache/save@v4
-  #       with:
-  #         path: ~/.m2/repository
-  #         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-  #     - name: Depcheck
-  #       uses: dependency-check/Dependency-Check_Action@main
-  #       id: Depcheck
-  #       with:
-  #         project: 'test'
-  #         path: '.'
-  #         format: 'HTML'
-  #         out: 'reports'
-  #         args: >
-  #           --failOnCVSS 7
-  #           --enableRetired
-  #     - name: Upload Test results
-  #       uses: actions/upload-artifact@v4
-  #       if: always()
-  #       with:
-  #          name: Depcheck report
-  #          path: ${{github.workspace}}/reports
-  #     - name: Slack notify on failure
-  #       uses: slackapi/slack-github-action@v2.0.0
-  #       if: failure()
-  #       with:
-  #         webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-  #         webhook-type: incoming-webhook
-  #         payload: |
-  #           {
-  #             "blocks": [
-  #               {
-  #                 "type": "section",
-  #                 "text": {
-  #                   "type": "mrkdwn",
-  #                   "text": "*Pipeline Alert! :rotating_light: *",
-  #                 }
-  #               },
-  #               {
-  #                 "type": "section",
-  #                 "text": {
-  #                   "type": "mrkdwn",
-  #                   "text": ":x: *Job* `${{ github.job }}` in *workflow* `${{ github.workflow }}` has failed"
-  #                 }
-  #               },
-  #               {
-  #                 "type": "section",
-  #                 "text": {
-  #                   "type": "mrkdwn",
-  #                   "text": ":bust_in_silhouette: Commit of message `${{ github.event.head_commit.message }}` commited by ${{ github.event.head_commit.author.name }} has resulted in the failure of the job\n*Ref*: <${{ github.event.head_commit.url }}|${{ github.sha }}>"
-  #                 }
-  #               },
-  #             ]
-  #           }   
+  dependency-scanning:
+    runs-on: ubuntu-latest
+    name: OWASP Dependency check
+    needs: secret-scanning
+    # continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Restore Maven packages
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+      - name: Build project with Maven
+        run: mvn clean install -DskipTests
+      - name: Cache Maven packages
+        id: cache-maven
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+      - name: Depcheck
+        uses: dependency-check/Dependency-Check_Action@main
+        id: Depcheck
+        with:
+          project: 'test'
+          path: '.'
+          format: 'HTML'
+          out: 'reports'
+          args: >
+            --failOnCVSS 7
+            --enableRetired
+      - name: Upload Test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+           name: Depcheck report
+           path: ${{github.workspace}}/reports
+      - name: Slack notify on failure
+        uses: slackapi/slack-github-action@v2.0.0
+        if: failure()
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Pipeline Alert! :rotating_light: *",
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":x: *Job* `${{ github.job }}` in *workflow* `${{ github.workflow }}` has failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":bust_in_silhouette: Commit of message `${{ github.event.head_commit.message }}` commited by ${{ github.event.head_commit.author.name }} has resulted in the failure of the job\n*Ref*: <${{ github.event.head_commit.url }}|${{ github.sha }}>"
+                  }
+                },
+              ]
+            }   
   compile:
     name: Compile code
     runs-on: ubuntu-latest
-    # needs: dependency-scanning
-    needs: secret-scanning
+    needs: dependency-scanning
+    # needs: secret-scanning
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -241,220 +242,220 @@ jobs:
                 },
               ]
             }
-  # analyze-sonar:
-  #   name: SonarQube
-  #   runs-on: ubuntu-latest
-  #   needs: test
-  #   # continue-on-error: true
-  #   steps:
-  #     - name: Checkout Repo
-  #       uses: actions/checkout@v4
-  #       with:
-  #         fetch-depth: 0
-  #     - name: Set up JDK
-  #       uses: actions/setup-java@v3
-  #       with:
-  #         java-version: '11.0.25+9' 
-  #         distribution: 'temurin'
-  #     - name: Restore Maven packages
-  #       uses: actions/cache/restore@v4
-  #       with:
-  #         path: ~/.m2/repository
-  #         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-  #     - name: Analyze
-  #       env:
-  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  #       run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=mostafaibrahim24_devsecops-CI
-  #     - name: Slack notify on failure
-  #       uses: slackapi/slack-github-action@v2.0.0
-  #       if: failure()
-  #       with:
-  #         webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-  #         webhook-type: incoming-webhook
-  #         payload: |
-  #           {
-  #             "blocks": [
-  #               {
-  #                 "type": "section",
-  #                 "text": {
-  #                   "type": "mrkdwn",
-  #                   "text": "*Pipeline Alert! :rotating_light: *",
-  #                 }
-  #               },
-  #               {
-  #                 "type": "section",
-  #                 "text": {
-  #                   "type": "mrkdwn",
-  #                   "text": ":x: *Job* `${{ github.job }}` in *workflow* `${{ github.workflow }}` has failed"
-  #                 }
-  #               },
-  #               {
-  #                 "type": "section",
-  #                 "text": {
-  #                   "type": "mrkdwn",
-  #                   "text": ":bust_in_silhouette: Commit of message `${{ github.event.head_commit.message }}` commited by ${{ github.event.head_commit.author.name }} has resulted in the failure of the job\n*Ref*: <${{ github.event.head_commit.url }}|${{ github.sha }}>"
-  #                 }
-  #               },
-  #             ]
-  #           }
-  # build-jar:
-  #   name: Build - Jar artifact
-  #   runs-on: ubuntu-latest
-  #   needs: analyze-sonar
-  #   # continue-on-error: true
-  #   steps:
-  #     - name: Checkout Repo
-  #       uses: actions/checkout@v4
-  #     - name: Set up JDK
-  #       uses: actions/setup-java@v3
-  #       with:
-  #         java-version: '11.0.25+9' 
-  #         distribution: 'temurin'
-  #     - name: Restore Maven packages
-  #       uses: actions/cache/restore@v4
-  #       with:
-  #         path: ~/.m2/repository
-  #         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-  #     - name: Maven Build
-  #       run: mvn clean package
-  #     - name: Upload Artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: petclinic.jar
-  #         path: target/*.jar
-  #     - name: Slack notify on failure
-  #       uses: slackapi/slack-github-action@v2.0.0
-  #       if: failure()
-  #       with:
-  #         webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-  #         webhook-type: incoming-webhook
-  #         payload: |
-  #           {
-  #             "blocks": [
-  #               {
-  #                 "type": "section",
-  #                 "text": {
-  #                   "type": "mrkdwn",
-  #                   "text": "*Pipeline Alert! :rotating_light: *",
-  #                 }
-  #               },
-  #               {
-  #                 "type": "section",
-  #                 "text": {
-  #                   "type": "mrkdwn",
-  #                   "text": ":x: *Job* `${{ github.job }}` in *workflow* `${{ github.workflow }}` has failed"
-  #                 }
-  #               },
-  #               {
-  #                 "type": "section",
-  #                 "text": {
-  #                   "type": "mrkdwn",
-  #                   "text": ":bust_in_silhouette: Commit of message `${{ github.event.head_commit.message }}` commited by ${{ github.event.head_commit.author.name }} has resulted in the failure of the job\n*Ref*: <${{ github.event.head_commit.url }}|${{ github.sha }}>"
-  #                 }
-  #               },
-  #             ]
-  #           }
-  # trivy-scan:
-  #   name: Build the docker image and scan using trivy
-  #   runs-on: ubuntu-latest
-  #   needs: build-jar
-  #   steps:
-  #     - name: Checkout Repo
-  #       uses: actions/checkout@v4
-  #     - name: Build an image from Dockerfile
-  #       run: docker build -t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/petclinic .
-  #     - name: Run Trivy vulnerability scanner
-  #       uses: aquasecurity/trivy-action@0.28.0
-  #       with:
-  #         image-ref: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/petclinic
-  #         format: table
-  #         exit-code: '1'
-  #         ignore-unfixed: true
-  #         vuln-type: 'os,library'
-  #         severity: 'CRITICAL,HIGH'
-  #     - name: Slack notify on failure
-  #       uses: slackapi/slack-github-action@v2.0.0
-  #       if: failure()
-  #       with:
-  #         webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-  #         webhook-type: incoming-webhook
-  #         payload: |
-  #           {
-  #             "blocks": [
-  #               {
-  #                 "type": "section",
-  #                 "text": {
-  #                   "type": "mrkdwn",
-  #                   "text": "*Pipeline Alert! :rotating_light: *",
-  #                 }
-  #               },
-  #               {
-  #                 "type": "section",
-  #                 "text": {
-  #                   "type": "mrkdwn",
-  #                   "text": ":x: *Job* `${{ github.job }}` in *workflow* `${{ github.workflow }}` has failed"
-  #                 }
-  #               },
-  #               {
-  #                 "type": "section",
-  #                 "text": {
-  #                   "type": "mrkdwn",
-  #                   "text": ":bust_in_silhouette: Commit of message `${{ github.event.head_commit.message }}` commited by ${{ github.event.head_commit.author.name }} has resulted in the failure of the job\n*Ref*: <${{ github.event.head_commit.url }}|${{ github.sha }}>"
-  #                 }
-  #               },
-  #             ]
-  #           }
-  # push-image:
-  #     name: Build and push to registry
-  #     runs-on: ubuntu-latest
-  #     needs: trivy-scan
-  #     steps:
-  #       - name: Registry login
-  #         uses: docker/login-action@v3
-  #         with:
-  #           username: ${{ secrets.DOCKERHUB_USERNAME }}
-  #           password: ${{ secrets.DOCKERHUB_TOKEN }}
-  #       - name: Build and push
-  #         uses: docker/build-push-action@v6
-  #         with:
-  #           push: true
-  #           tags: ${{ secrets.DOCKERHUB_USERNAME }}/petclinic:latest
-  #       - name: Slack notify on failure
-  #         uses: slackapi/slack-github-action@v2.0.0
-  #         if: failure()
-  #         with:
-  #           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-  #           webhook-type: incoming-webhook
-  #           payload: |
-  #             {
-  #               "blocks": [
-  #                 {
-  #                   "type": "section",
-  #                   "text": {
-  #                     "type": "mrkdwn",
-  #                     "text": "*Pipeline Alert! :rotating_light: *",
-  #                   }
-  #                 },
-  #                 {
-  #                   "type": "section",
-  #                   "text": {
-  #                     "type": "mrkdwn",
-  #                     "text": ":x: *Job* `${{ github.job }}` in *workflow* `${{ github.workflow }}` has failed"
-  #                   }
-  #                 },
-  #                 {
-  #                   "type": "section",
-  #                   "text": {
-  #                     "type": "mrkdwn",
-  #                     "text": ":bust_in_silhouette: Commit of message `${{ github.event.head_commit.message }}` commited by ${{ github.event.head_commit.author.name }} has resulted in the failure of the job\n*Ref*: <${{ github.event.head_commit.url }}|${{ github.sha }}>"
-  #                   }
-  #                 },
-  #               ]
-  #             }
+  analyze-sonar:
+    name: SonarQube
+    runs-on: ubuntu-latest
+    needs: test
+    # continue-on-error: true
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11.0.25+9' 
+          distribution: 'temurin'
+      - name: Restore Maven packages
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+      - name: Analyze
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=mostafaibrahim24_devsecops-CI
+      - name: Slack notify on failure
+        uses: slackapi/slack-github-action@v2.0.0
+        if: failure()
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Pipeline Alert! :rotating_light: *",
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":x: *Job* `${{ github.job }}` in *workflow* `${{ github.workflow }}` has failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":bust_in_silhouette: Commit of message `${{ github.event.head_commit.message }}` commited by ${{ github.event.head_commit.author.name }} has resulted in the failure of the job\n*Ref*: <${{ github.event.head_commit.url }}|${{ github.sha }}>"
+                  }
+                },
+              ]
+            }
+  build-jar:
+    name: Build - Jar artifact
+    runs-on: ubuntu-latest
+    needs: analyze-sonar
+    # continue-on-error: true
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11.0.25+9' 
+          distribution: 'temurin'
+      - name: Restore Maven packages
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+      - name: Maven Build
+        run: mvn clean package
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: petclinic.jar
+          path: target/*.jar
+      - name: Slack notify on failure
+        uses: slackapi/slack-github-action@v2.0.0
+        if: failure()
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Pipeline Alert! :rotating_light: *",
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":x: *Job* `${{ github.job }}` in *workflow* `${{ github.workflow }}` has failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":bust_in_silhouette: Commit of message `${{ github.event.head_commit.message }}` commited by ${{ github.event.head_commit.author.name }} has resulted in the failure of the job\n*Ref*: <${{ github.event.head_commit.url }}|${{ github.sha }}>"
+                  }
+                },
+              ]
+            }
+  trivy-scan:
+    name: Build the docker image and scan using trivy
+    runs-on: ubuntu-latest
+    needs: build-jar
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - name: Build an image from Dockerfile
+        run: docker build -t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/petclinic .
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/petclinic
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+      - name: Slack notify on failure
+        uses: slackapi/slack-github-action@v2.0.0
+        if: failure()
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Pipeline Alert! :rotating_light: *",
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":x: *Job* `${{ github.job }}` in *workflow* `${{ github.workflow }}` has failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":bust_in_silhouette: Commit of message `${{ github.event.head_commit.message }}` commited by ${{ github.event.head_commit.author.name }} has resulted in the failure of the job\n*Ref*: <${{ github.event.head_commit.url }}|${{ github.sha }}>"
+                  }
+                },
+              ]
+            }
+  push-image:
+      name: Build and push to registry
+      runs-on: ubuntu-latest
+      needs: trivy-scan
+      steps:
+        - name: Registry login
+          uses: docker/login-action@v3
+          with:
+            username: ${{ secrets.DOCKERHUB_USERNAME }}
+            password: ${{ secrets.DOCKERHUB_TOKEN }}
+        - name: Build and push
+          uses: docker/build-push-action@v6
+          with:
+            push: true
+            tags: ${{ secrets.DOCKERHUB_USERNAME }}/petclinic:latest
+        - name: Slack notify on failure
+          uses: slackapi/slack-github-action@v2.0.0
+          if: failure()
+          with:
+            webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+            webhook-type: incoming-webhook
+            payload: |
+              {
+                "blocks": [
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "*Pipeline Alert! :rotating_light: *",
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": ":x: *Job* `${{ github.job }}` in *workflow* `${{ github.workflow }}` has failed"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": ":bust_in_silhouette: Commit of message `${{ github.event.head_commit.message }}` commited by ${{ github.event.head_commit.author.name }} has resulted in the failure of the job\n*Ref*: <${{ github.event.head_commit.url }}|${{ github.sha }}>"
+                    }
+                  },
+                ]
+              }
   slack-pipeline-success-notify:
     name: Slack Pipeline Success Notify
     if: always()
-    needs: [start-time-capture,test]
+    needs: [start-time-capture,push-image]
     runs-on: ubuntu-latest
     steps:
       - name: Calculate Workflow Duration
