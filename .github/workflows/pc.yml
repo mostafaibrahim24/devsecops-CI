@@ -7,6 +7,14 @@ on:
     paths-ignore:
       - README.md
 jobs:
+  start-time-capture:
+    runs-on: ubuntu-latest
+    outputs:
+      workflow_start_time: ${{ steps.start.outputs.start_time_unix }}
+    steps:
+      - name: Capture Workflow Start Time
+        id: start
+        run: echo "start_time_unix=$(date +%s)" >> $GITHUB_OUTPUT
   secret-scanning:
     name: Secret scanning
     runs-on: ubuntu-latest
@@ -444,16 +452,19 @@ jobs:
   slack-pipeline-success-notify:
     name: Slack Pipeline Success Notify
     if: always()
-    needs: test
+    needs: [start-time-capture,test]
     runs-on: ubuntu-latest
     steps:
       - name: Calculate Workflow Duration
         id: workflow_duration
         run: |
-          START_TIME=$(date -d "${{ github.event.workflow_run.created_at }}" +%s)
+          START_TIME=${{ needs.start-time-capture.outputs.workflow_start_time }}
           END_TIME=$(date +%s)
           DURATION=$((END_TIME - START_TIME))
-          echo "DURATION=$DURATION" >> $GITHUB_OUTPUT
+          MINUTES=$((DURATION / 60))
+          SECONDS=$((DURATION % 60))
+          echo "MINUTES=$MINUTES" >> $GITHUB_OUTPUT
+          echo "SECONDS=$SECONDS" >> $GITHUB_OUTPUT
       - name: Notify
         uses: slackapi/slack-github-action@v2.0.0
         if: always()
@@ -481,7 +492,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text":":watch: *Duration:* ${{ steps.workflow_duration.outputs.DURATION }} seconds."
+                    "text":":watch: *Duration:* ${{ steps.workflow_duration.outputs.MINUTES }} minutes and ${{ steps.workflow_duration.outputs.SECONDS }} seconds."
                   }
                 },
               ]
