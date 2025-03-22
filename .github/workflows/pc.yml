@@ -19,6 +19,7 @@ jobs:
     name: Secret scanning
     runs-on: ubuntu-latest
     # continue-on-error: true
+    needs: start-time-capture
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -130,62 +131,63 @@ jobs:
   #               },
   #             ]
   #           }   
-  # compile:
-  #   name: Compile code
-  #   runs-on: ubuntu-latest
-  #   needs: dependency-scanning
-  #   steps:
-  #     - name: Checkout Repo
-  #       uses: actions/checkout@v4
-  #     - name: Set up JDK
-  #       uses: actions/setup-java@v3
-  #       with:
-  #         java-version: '11.0.25+9' 
-  #         distribution: 'temurin'
-  #     - name: Restore Maven packages
-  #       uses: actions/cache/restore@v4
-  #       with:
-  #         path: ~/.m2/repository
-  #         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-  #     - name: Compile
-  #       run: mvn clean compile
-  #     - name: Slack notify on failure
-  #       uses: slackapi/slack-github-action@v2.0.0
-  #       if: failure()
-  #       with:
-  #         webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
-  #         webhook-type: incoming-webhook
-  #         payload: |
-  #           {
-  #             "blocks": [
-  #               {
-  #                 "type": "section",
-  #                 "text": {
-  #                   "type": "mrkdwn",
-  #                   "text": "*Pipeline Alert! :rotating_light: *",
-  #                 }
-  #               },
-  #               {
-  #                 "type": "section",
-  #                 "text": {
-  #                   "type": "mrkdwn",
-  #                   "text": ":x: *Job* `${{ github.job }}` in *workflow* `${{ github.workflow }}` has failed"
-  #                 }
-  #               },
-  #               {
-  #                 "type": "section",
-  #                 "text": {
-  #                   "type": "mrkdwn",
-  #                   "text": ":bust_in_silhouette: Commit of message `${{ github.event.head_commit.message }}` commited by ${{ github.event.head_commit.author.name }} has resulted in the failure of the job\n*Ref*: <${{ github.event.head_commit.url }}|${{ github.sha }}>"
-  #                 }
-  #               },
-  #             ]
-  #           }
+  compile:
+    name: Compile code
+    runs-on: ubuntu-latest
+    # needs: dependency-scanning
+    needs: secret-scanning
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11.0.25+9' 
+          distribution: 'temurin'
+      - name: Restore Maven packages
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+      - name: Compile
+        run: mvn clean compile
+      - name: Slack notify on failure
+        uses: slackapi/slack-github-action@v2.0.0
+        if: failure()
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Pipeline Alert! :rotating_light: *",
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":x: *Job* `${{ github.job }}` in *workflow* `${{ github.workflow }}` has failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":bust_in_silhouette: Commit of message `${{ github.event.head_commit.message }}` commited by ${{ github.event.head_commit.author.name }} has resulted in the failure of the job\n*Ref*: <${{ github.event.head_commit.url }}|${{ github.sha }}>"
+                  }
+                },
+              ]
+            }
   test:
     name: Unit test and generate code coverage
     runs-on: ubuntu-latest
     # needs: 
-    needs: secret-scanning
+    needs: compile
     # continue-on-error: true
     steps:
       - name: Checkout Repo
@@ -492,7 +494,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text":":watch: *Duration:* ${{ steps.workflow_duration.outputs.MINUTES }} minutes and ${{ steps.workflow_duration.outputs.SECONDS }} seconds."
+                    "text":":watch: *Duration:* ${{ steps.workflow_duration.outputs.MINUTES }} min and ${{ steps.workflow_duration.outputs.SECONDS }} sec."
                   }
                 },
               ]
