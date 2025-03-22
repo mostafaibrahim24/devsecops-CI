@@ -90,24 +90,46 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
-            text: "*Alert! :rotating_light: *: ${{ github.job }}"
-            blocks:
-               - type: "section"
-                text:
-                  type: "mrkdwn"
-                  text: "${{ github.job }} in workflow ${{ github.workflow }} is of status ${{ job.status }}"
-              - type: "section"
-                text:
-                  type: "mrkdwn"
-                  text: "*Repo*\n<https://github.com/${{ github.repository }}|${{ github.repository }}>"
-              - type: "section"
-                text:
-                  type: "mrkdwn"
-                  text: "*Commit*\n*Message*${{ github.event.head_commit.message }}\n<${{ github.event.head_commit.url }}|${{ env.SHORT_SHA }}>"
-              - type: "section"
-                text:
-                  type: "mrkdwn"
-                  text: "*Author*\n${{ github.event.head_commit.author.name }}" 
+            {
+              "icon_emoji": ":robot_face:", 
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Pipeline Alert! :rotating_light: *",
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Job* `${{ github.job }}` in *workflow* `${{ github.workflow }}` has failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Repo*\n<https://github.com/${{ github.repository }}|${{ github.repository }}>"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Commit resulted in failure*\n Commit message:`${{ github.event.head_commit.message }}`\n<${{ github.event.head_commit.url }}|${{ github.sha }}>"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Author*\n${{ github.event.head_commit.author.name }}"
+                  }
+                }
+              ]
+            }   
   compile:
     name: Compile code
     runs-on: ubuntu-latest
