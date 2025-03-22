@@ -1,4 +1,17 @@
 # DevSecOps - Continuous Integration 🛡️
+
+<p align="center">
+  <img src=https://github.com/user-attachments/assets/7be219da-1c2b-41de-a53d-2bcae890550c width=80 height=80\>
+  <img src=https://github.com/user-attachments/assets/85c2475a-cadb-4224-ab54-f80daa4e7b69 width=130 height=80\>
+  <img src=https://github.com/user-attachments/assets/7e103b38-3863-41aa-b27c-4b76bcd884c7 width=100 height=80\>
+  <img src=https://github.com/user-attachments/assets/9729b2d4-c308-42c9-a62b-fd46776c6e84 width=220 height=70\>
+  <img src=https://github.com/user-attachments/assets/e09952b8-2bb5-41a1-aea1-43ecd542f186 width=80 height=120\>
+
+</p>
+
+
+
+
 This project is a Continuous Integration pipeline implemented using GitHub Actions, embodying the "shift-left" security approach.  
 By integrating security checks directly into the CI process, it aims to identify and mitigate potential vulnerabilities early in the software development process, preventing costly and time-consuming fixes later on 💰⌚.  
 It integrates several security scanning tools to achieve this goal.  
